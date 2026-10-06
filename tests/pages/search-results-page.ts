@@ -29,6 +29,10 @@ export class SearchResultsPage extends BasePage {
     await expect(this.firstProductName).toContainText(new RegExp(term, 'i'));
   }
 
+  productCardByName(name: RegExp): Locator {
+    return this.productCards.filter({ hasText: name });
+  }
+
   async addFirstProductToCart(): Promise<void> {
     await this.firstProductAddButton.click();
   }
