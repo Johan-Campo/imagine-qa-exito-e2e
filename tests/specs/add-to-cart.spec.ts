@@ -44,4 +44,35 @@ test.describe('Add to cart', () => {
       expect(await cart.subtotal()).toBe(await cart.firstLinePrice());
     },
   );
+
+  test(
+    'asks for a city and a store before adding a grocery product',
+    { tag: ['@critical', '@e2e', '@cart', '@TC-05'] },
+    async ({ page }) => {
+      const home = new HomePage(page);
+      const results = new SearchResultsPage(page);
+      const locationModal = new LocationModal(page);
+      const cart = new CartPanel(page);
+
+      await home.open();
+      await home.search(SEARCH_TERM);
+      await results.waitForResultsFor(SEARCH_TERM);
+
+      await results.addFirstProductToCart();
+      await expect(locationModal.dialog).toBeVisible();
+      await expect(locationModal.storeCombobox).toBeDisabled();
+      // The site blocks "Confirmar" with CSS only (no disabled attribute), so check the style.
+      await expect(locationModal.confirmButton).toHaveCSS('pointer-events', 'none');
+
+      await locationModal.chooseCity(BOGOTA_CHAPINERO.city);
+      await expect(locationModal.storeCombobox).toBeEnabled();
+      await expect(locationModal.confirmButton).toHaveCSS('pointer-events', 'none');
+
+      await locationModal.close();
+      await expect(locationModal.dialog).toBeHidden();
+      await expect(cart.toggleButton).not.toContainText(/\d/);
+      await expect(results.firstProductQuantity).toHaveCount(0);
+      await expect(results.firstProductAddButton).toBeVisible();
+    },
+  );
 });
