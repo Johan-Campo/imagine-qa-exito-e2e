@@ -35,8 +35,6 @@ export async function requestTriage(
   const response = await fetchImpl(ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    // No `response_format`: with this model its JSON mode answered `{}` in 5 of 5 calls on the
-    // same input, while plain mode returned all four fields. The validator checks the JSON.
     body: JSON.stringify({ model: MODEL, messages, temperature: 0, max_tokens: 400 }),
   });
 

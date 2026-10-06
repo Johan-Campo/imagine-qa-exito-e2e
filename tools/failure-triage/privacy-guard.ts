@@ -29,7 +29,6 @@ const PATH_PATTERNS: readonly RegExp[] = [
 ];
 
 export function guardInput(text: string): GuardResult {
-  // Paths are redacted first so path segments never trigger the token rule.
   const redacted = PATH_PATTERNS.reduce((acc, pattern) => acc.replace(pattern, '<path>'), text);
 
   for (const rule of BLOCK_RULES) {
