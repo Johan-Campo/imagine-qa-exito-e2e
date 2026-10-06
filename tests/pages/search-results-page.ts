@@ -12,7 +12,7 @@ export class SearchResultsPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.productCards = page.locator('article');
-    this.firstProduct = this.productCards.first();
+    this.firstProduct = this.productCards.filter({ hasNotText: 'Patrocinado' }).first();
     this.firstProductName = this.firstProduct.getByRole('heading').first();
     this.firstProductAddButton = this.firstProduct.getByRole('button', {
       name: 'Agregar',
