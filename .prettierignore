@@ -3,3 +3,4 @@ test-results
 playwright-report
 package-lock.json
 tools/failure-triage/results
+reports
