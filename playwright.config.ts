@@ -1,6 +1,5 @@
 import { defineConfig } from '@playwright/test';
 
-// Cloudflare protects the site: run one worker at human pace, with a visible (non-headless) Chrome.
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,

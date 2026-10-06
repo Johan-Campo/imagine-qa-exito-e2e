@@ -17,7 +17,6 @@ export class BasePage {
       await this.page.keyboard.press('Escape');
       await popup.waitFor({ state: 'hidden' });
     } catch (error) {
-      // The promo pop-up is intermittent, so its absence is not a failure.
       if (!(error instanceof errors.TimeoutError)) {
         throw error;
       }

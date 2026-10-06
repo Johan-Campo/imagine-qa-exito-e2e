@@ -15,7 +15,7 @@ test.describe('Add to cart', () => {
     {
       tag: ['@critical', '@e2e', '@cart', '@TC-07'],
       annotation: [
-        { type: 'case', description: 'TC-07 · Happy path · see CASOS_DE_PRUEBA.md' },
+        { type: 'case', description: 'TC-07 · Happy path · see the test document' },
         { type: 'priority', description: 'High' },
       ],
     },
@@ -37,7 +37,6 @@ test.describe('Add to cart', () => {
       });
 
       await test.step('Add the first product without a location', async () => {
-        // Without a saved location the first click only opens the location modal.
         await results.addFirstProductToCart();
       });
 
@@ -51,9 +50,7 @@ test.describe('Add to cart', () => {
       });
 
       await test.step('Add the first product again', async () => {
-        // The location confirmation does not add the product, so add it again.
         await results.addFirstProductToCart();
-        // The add button shows a spinner while the cart is validated server-side, which can be slow.
         await expect(results.firstProductQuantity).toHaveValue('1', { timeout: 30_000 });
         await expect(cart.toggleButton).toContainText('1');
         await attachScreenshot(page, 'Product added to the cart');
@@ -76,7 +73,7 @@ test.describe('Add to cart', () => {
     {
       tag: ['@critical', '@e2e', '@cart', '@TC-05'],
       annotation: [
-        { type: 'case', description: 'TC-05 · Negative · see CASOS_DE_PRUEBA.md' },
+        { type: 'case', description: 'TC-05 · Negative · see the test document' },
         { type: 'priority', description: 'High' },
       ],
     },
@@ -99,7 +96,6 @@ test.describe('Add to cart', () => {
         await results.addFirstProductToCart();
         await expect(locationModal.dialog).toBeVisible();
         await expect(locationModal.storeCombobox).toBeDisabled();
-        // The site blocks "Confirmar" with CSS only (no disabled attribute), so check the style.
         await expect(locationModal.confirmButton).toHaveCSS('pointer-events', 'none');
         await attachScreenshot(page, 'Modal blocked before choosing a city');
       });
@@ -127,7 +123,7 @@ test.describe('Add to cart', () => {
     {
       tag: ['@critical', '@e2e', '@cart', '@TC-09'],
       annotation: [
-        { type: 'case', description: 'TC-09 · Additional case · see CASOS_DE_PRUEBA.md' },
+        { type: 'case', description: 'TC-09 · Additional case · see the test document' },
         { type: 'priority', description: 'High' },
       ],
     },
@@ -152,11 +148,9 @@ test.describe('Add to cart', () => {
         await expect(pinCard, 'the Netflix pin card should be in the results').toBeVisible();
       });
 
-      // At the limit the stepper renders the quantity as plain text instead of an input.
       const quantity = pinCard.getByText(`${limit} und.`);
 
       await test.step('Add the pin up to the category limit', async () => {
-        // Digital pins are not grocery, so no location is needed.
         await pinCard.getByRole('button', { name: 'Agregar', exact: true }).click();
         await expect(quantity).toBeVisible({ timeout: 30_000 });
         await expect(cart.toggleButton).toContainText(String(limit));
@@ -165,7 +159,6 @@ test.describe('Add to cart', () => {
       });
 
       await test.step('Check the quantity cannot be increased past the limit', async () => {
-        // The stepper icons have no accessible name; the "+" is the last button in the card.
         const increase = pinCard.getByRole('button').last();
         await expect(increase).toBeDisabled();
         await increase.click({ force: true });

@@ -9,10 +9,7 @@ export class LocationModal {
   readonly confirmButton: Locator;
 
   constructor(page: Page) {
-    // Several dialogs live in the DOM, so the title identifies this one.
     this.dialog = page.getByRole('dialog').filter({ hasText: '¿Cómo quieres recibir tu pedido?' });
-    // The react-select inputs have no accessible name and, while disabled, are left out of
-    // role queries, so they are addressed by their ARIA role attribute and order.
     const selects = this.dialog.locator('input[role="combobox"]');
     this.cityCombobox = selects.nth(0);
     this.storeCombobox = selects.nth(1);
@@ -30,7 +27,6 @@ export class LocationModal {
     await expect(this.storeCombobox).toBeEnabled();
   }
 
-  // The close icon has no accessible name, so Escape dismisses the modal without confirming.
   async close(): Promise<void> {
     await this.dialog.press('Escape');
   }
