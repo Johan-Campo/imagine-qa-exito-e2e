@@ -1,0 +1,37 @@
+[
+  {
+    "file": "01-line-items-too-broad.md",
+    "expected": "test_code_issue",
+    "why": "The locator also matched list items of the product grid behind the cart panel."
+  },
+  {
+    "file": "02-quantity-spinner-slow.md",
+    "expected": "timing_or_race",
+    "why": "The Agregar button showed a spinner while the cart was validated server-side, and the assertion timeout was too short."
+  },
+  {
+    "file": "03-first-card-changed.md",
+    "expected": "timing_or_race",
+    "why": "The results list was re-rendered during hydration and the first card was a non-grocery product that is added without asking for a location."
+  },
+  {
+    "file": "04-confirm-pointer-events.md",
+    "expected": "test_code_issue",
+    "why": "The site blocks the Confirmar button only with CSS pointer-events, and the test tried to click it."
+  },
+  {
+    "file": "05-disabled-combobox-not-found.md",
+    "expected": "test_code_issue",
+    "why": "Disabled react-select inputs are excluded from role-based queries, so the locator never matches."
+  },
+  {
+    "file": "06-test-timeout-no-cause.md",
+    "expected": "undetermined",
+    "why": "A whole-run 60 s timeout whose cause was never diagnosed."
+  },
+  {
+    "file": "07-cloudflare-block.md",
+    "expected": "site_or_environment",
+    "why": "Cloudflare blocked the request, observed during manual testing of the same site."
+  }
+]
