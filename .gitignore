@@ -4,6 +4,8 @@ playwright-report/
 blob-report/
 .env
 .env.*
+!.env.example
 .auth/
 *.log
 .DS_Store
+tools/failure-triage/runs.log.jsonl
