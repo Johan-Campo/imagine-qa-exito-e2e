@@ -56,17 +56,19 @@ npm run test:unit
 
 Estas pruebas no abren el navegador.
 
-6. Para ejecutar las pruebas y generar un reporte de ejemplo:
+6. Para ejecutar las 4 pruebas sin reintentos y regenerar el reporte de ejemplo en `reports/sample-run/`:
 
 ```
 npm run test:sample
 ```
 
-Para abrir el reporte:
+Para abrir ese reporte:
 
 ```
 npm run test:sample:report
 ```
+
+Con `npm run test:e2e` se genera además un reporte HTML local, que se abre con `npm run test:report`. Por su parte, `npm test` ejecuta todas las pruebas (4 sobre el sitio real y 24 unitarias).
 
 También puedes revisar la calidad del código con:
 
@@ -103,7 +105,7 @@ La utilización de esta herramienta puede generar costos asociados al servicio d
 ## Qué hay en cada carpeta
 
 - `tests/` contiene las pruebas automatizadas y sus componentes.
-- `tools/failure-triage/` contiene la herramienta de IA para el análisis de fallos.
+- `tools/failure-triage/` contiene la herramienta de IA para el análisis de fallos, sus 7 casos de evaluación (`fixtures/`) y los resultados (`results/`).
 - `reports/sample-run/` contiene un reporte de una ejecución real, incluyendo los pasos realizados y capturas de pantalla. Las 4 pruebas de esa ejecución finalizaron correctamente.
 
 Para obtener un nivel mayor de detalle se pueden activar las trazas de Playwright:
