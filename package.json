@@ -6,6 +6,8 @@
   "scripts": {
     "test": "playwright test",
     "test:report": "playwright show-report",
+    "test:sample": "playwright test --config playwright.sample.config.ts",
+    "test:sample:report": "playwright show-report reports/sample-run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",

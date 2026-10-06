@@ -3,6 +3,7 @@ import { CartPanel } from '../pages/cart-panel';
 import { HomePage } from '../pages/home-page';
 import { LocationModal } from '../pages/location-modal';
 import { SearchResultsPage } from '../pages/search-results-page';
+import { attachScreenshot } from '../support/evidence';
 import { fetchCategoryLimit } from '../support/limit-rules';
 import { BOGOTA_CHAPINERO } from '../support/locations';
 
@@ -11,99 +12,165 @@ const SEARCH_TERM = 'arroz';
 test.describe('Add to cart', () => {
   test(
     'adds a product after choosing a pickup location',
-    { tag: ['@critical', '@e2e', '@cart', '@TC-07'] },
+    {
+      tag: ['@critical', '@e2e', '@cart', '@TC-07'],
+      annotation: [
+        { type: 'case', description: 'TC-07 · Happy path · see CASOS_DE_PRUEBA.md' },
+        { type: 'priority', description: 'High' },
+      ],
+    },
     async ({ page }) => {
       const home = new HomePage(page);
       const results = new SearchResultsPage(page);
       const locationModal = new LocationModal(page);
       const cart = new CartPanel(page);
+      let productName = '';
 
-      await home.open();
-      await home.search(SEARCH_TERM);
-      await results.waitForResultsFor(SEARCH_TERM);
-      const productName = (await results.firstProductName.innerText()).trim();
+      await test.step('Open the home page', async () => {
+        await home.open();
+      });
 
-      // Without a saved location the first click only opens the location modal.
-      await results.addFirstProductToCart();
-      await locationModal.choosePickupLocation(BOGOTA_CHAPINERO);
-      await expect(locationModal.dialog).toBeHidden();
-      await expect(page.getByRole('button', { name: /Compra y Recoge/ }).first()).toContainText(
-        BOGOTA_CHAPINERO.storeName,
-      );
+      await test.step(`Search for "${SEARCH_TERM}"`, async () => {
+        await home.search(SEARCH_TERM);
+        await results.waitForResultsFor(SEARCH_TERM);
+        productName = (await results.firstProductName.innerText()).trim();
+      });
 
-      // The location confirmation does not add the product, so add it again.
-      await results.addFirstProductToCart();
-      // The add button shows a spinner while the cart is validated server-side, which can be slow.
-      await expect(results.firstProductQuantity).toHaveValue('1', { timeout: 30_000 });
-      await expect(cart.toggleButton).toContainText('1');
+      await test.step('Add the first product without a location', async () => {
+        // Without a saved location the first click only opens the location modal.
+        await results.addFirstProductToCart();
+      });
 
-      await cart.open();
-      await expect(cart.heading).toBeVisible();
-      await expect(cart.lineItems).toHaveCount(1);
-      await expect(cart.lineItems.first()).toContainText(productName);
-      expect(await cart.badgeCount()).toBe(1);
-      expect(await cart.subtotal()).toBe(await cart.firstLinePrice());
+      await test.step('Choose Bogotá / Chapinero as pickup location', async () => {
+        await locationModal.choosePickupLocation(BOGOTA_CHAPINERO);
+        await expect(locationModal.dialog).toBeHidden();
+        await expect(page.getByRole('button', { name: /Compra y Recoge/ }).first()).toContainText(
+          BOGOTA_CHAPINERO.storeName,
+        );
+        await attachScreenshot(page, 'Pickup location confirmed');
+      });
+
+      await test.step('Add the first product again', async () => {
+        // The location confirmation does not add the product, so add it again.
+        await results.addFirstProductToCart();
+        // The add button shows a spinner while the cart is validated server-side, which can be slow.
+        await expect(results.firstProductQuantity).toHaveValue('1', { timeout: 30_000 });
+        await expect(cart.toggleButton).toContainText('1');
+        await attachScreenshot(page, 'Product added to the cart');
+      });
+
+      await test.step('Open the cart and check the line item and subtotal', async () => {
+        await cart.open();
+        await expect(cart.heading).toBeVisible();
+        await expect(cart.lineItems).toHaveCount(1);
+        await expect(cart.lineItems.first()).toContainText(productName);
+        expect(await cart.badgeCount()).toBe(1);
+        expect(await cart.subtotal()).toBe(await cart.firstLinePrice());
+        await attachScreenshot(page, 'Cart panel with subtotal');
+      });
     },
   );
 
   test(
     'asks for a city and a store before adding a grocery product',
-    { tag: ['@critical', '@e2e', '@cart', '@TC-05'] },
+    {
+      tag: ['@critical', '@e2e', '@cart', '@TC-05'],
+      annotation: [
+        { type: 'case', description: 'TC-05 · Negative · see CASOS_DE_PRUEBA.md' },
+        { type: 'priority', description: 'High' },
+      ],
+    },
     async ({ page }) => {
       const home = new HomePage(page);
       const results = new SearchResultsPage(page);
       const locationModal = new LocationModal(page);
       const cart = new CartPanel(page);
 
-      await home.open();
-      await home.search(SEARCH_TERM);
-      await results.waitForResultsFor(SEARCH_TERM);
+      await test.step('Open the home page', async () => {
+        await home.open();
+      });
 
-      await results.addFirstProductToCart();
-      await expect(locationModal.dialog).toBeVisible();
-      await expect(locationModal.storeCombobox).toBeDisabled();
-      // The site blocks "Confirmar" with CSS only (no disabled attribute), so check the style.
-      await expect(locationModal.confirmButton).toHaveCSS('pointer-events', 'none');
+      await test.step(`Search for "${SEARCH_TERM}"`, async () => {
+        await home.search(SEARCH_TERM);
+        await results.waitForResultsFor(SEARCH_TERM);
+      });
 
-      await locationModal.chooseCity(BOGOTA_CHAPINERO.city);
-      await expect(locationModal.storeCombobox).toBeEnabled();
-      await expect(locationModal.confirmButton).toHaveCSS('pointer-events', 'none');
+      await test.step('Add the first product without a location and check the modal blocks it', async () => {
+        await results.addFirstProductToCart();
+        await expect(locationModal.dialog).toBeVisible();
+        await expect(locationModal.storeCombobox).toBeDisabled();
+        // The site blocks "Confirmar" with CSS only (no disabled attribute), so check the style.
+        await expect(locationModal.confirmButton).toHaveCSS('pointer-events', 'none');
+        await attachScreenshot(page, 'Modal blocked before choosing a city');
+      });
 
-      await locationModal.close();
-      await expect(locationModal.dialog).toBeHidden();
-      await expect(cart.toggleButton).not.toContainText(/\d/);
-      await expect(results.firstProductQuantity).toHaveCount(0);
-      await expect(results.firstProductAddButton).toBeVisible();
+      await test.step('Choose only a city and check the store is still required', async () => {
+        await locationModal.chooseCity(BOGOTA_CHAPINERO.city);
+        await expect(locationModal.storeCombobox).toBeEnabled();
+        await expect(locationModal.confirmButton).toHaveCSS('pointer-events', 'none');
+        await attachScreenshot(page, 'City chosen, store still pending');
+      });
+
+      await test.step('Close the modal and check nothing was added', async () => {
+        await locationModal.close();
+        await expect(locationModal.dialog).toBeHidden();
+        await expect(cart.toggleButton).not.toContainText(/\d/);
+        await expect(results.firstProductQuantity).toHaveCount(0);
+        await expect(results.firstProductAddButton).toBeVisible();
+        await attachScreenshot(page, 'Modal closed, cart still empty');
+      });
     },
   );
 
   test(
     'does not allow more units than the category limit',
-    { tag: ['@critical', '@e2e', '@cart', '@TC-09'] },
+    {
+      tag: ['@critical', '@e2e', '@cart', '@TC-09'],
+      annotation: [
+        { type: 'case', description: 'TC-09 · Additional case · see CASOS_DE_PRUEBA.md' },
+        { type: 'priority', description: 'High' },
+      ],
+    },
     async ({ page }) => {
       const home = new HomePage(page);
       const results = new SearchResultsPage(page);
       const cart = new CartPanel(page);
-      const limit = await fetchCategoryLimit(page.request, 'NETFLIX');
+      const limit = await test.step('Read the category limit from the site rules', async () =>
+        fetchCategoryLimit(page.request, 'NETFLIX'));
 
-      await home.open();
-      await home.search('netflix');
+      await test.step('Open the home page', async () => {
+        await home.open();
+      });
+
+      await test.step('Search for "netflix"', async () => {
+        await home.search('netflix');
+      });
+
       const pinCard = results.productCardByName(/Pin virtual POSA/i).first();
-      await expect(pinCard, 'the Netflix pin card should be in the results').toBeVisible();
 
-      // Digital pins are not grocery, so no location is needed.
-      await pinCard.getByRole('button', { name: 'Agregar', exact: true }).click();
+      await test.step('Find the Netflix pin card', async () => {
+        await expect(pinCard, 'the Netflix pin card should be in the results').toBeVisible();
+      });
+
       // At the limit the stepper renders the quantity as plain text instead of an input.
       const quantity = pinCard.getByText(`${limit} und.`);
-      await expect(quantity).toBeVisible({ timeout: 30_000 });
-      await expect(cart.toggleButton).toContainText(String(limit));
-      await expect(pinCard.getByText(new RegExp(`Máximo ${limit} unidad`))).toBeVisible();
 
-      // The stepper icons have no accessible name; the "+" is the last button in the card.
-      const increase = pinCard.getByRole('button').last();
-      await expect(increase).toBeDisabled();
-      await increase.click({ force: true });
-      await expect(quantity).toBeVisible();
+      await test.step('Add the pin up to the category limit', async () => {
+        // Digital pins are not grocery, so no location is needed.
+        await pinCard.getByRole('button', { name: 'Agregar', exact: true }).click();
+        await expect(quantity).toBeVisible({ timeout: 30_000 });
+        await expect(cart.toggleButton).toContainText(String(limit));
+        await expect(pinCard.getByText(new RegExp(`Máximo ${limit} unidad`))).toBeVisible();
+        await attachScreenshot(page, 'Product at its limit with the message visible');
+      });
+
+      await test.step('Check the quantity cannot be increased past the limit', async () => {
+        // The stepper icons have no accessible name; the "+" is the last button in the card.
+        const increase = pinCard.getByRole('button').last();
+        await expect(increase).toBeDisabled();
+        await increase.click({ force: true });
+        await expect(quantity).toBeVisible();
+      });
     },
   );
 });
