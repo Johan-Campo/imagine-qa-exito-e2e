@@ -160,4 +160,4 @@ Es una muestra pequeña y los resultados pueden variar entre ejecuciones, por lo
 
 ## Video de la prueba
 
-[ENLACE DEL VIDEO]
+[Ver el video de la prueba](https://drive.google.com/file/d/1tM6y9H0DGiEVjq_xWxU2vLRv2faPVWs8/view?usp=sharing)
