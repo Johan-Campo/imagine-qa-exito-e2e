@@ -3,6 +3,7 @@ import { CartPanel } from '../pages/cart-panel';
 import { HomePage } from '../pages/home-page';
 import { LocationModal } from '../pages/location-modal';
 import { SearchResultsPage } from '../pages/search-results-page';
+import { fetchCategoryLimit } from '../support/limit-rules';
 import { BOGOTA_CHAPINERO } from '../support/locations';
 
 const SEARCH_TERM = 'arroz';
@@ -73,6 +74,36 @@ test.describe('Add to cart', () => {
       await expect(cart.toggleButton).not.toContainText(/\d/);
       await expect(results.firstProductQuantity).toHaveCount(0);
       await expect(results.firstProductAddButton).toBeVisible();
+    },
+  );
+
+  test(
+    'does not allow more units than the category limit',
+    { tag: ['@critical', '@e2e', '@cart', '@TC-09'] },
+    async ({ page }) => {
+      const home = new HomePage(page);
+      const results = new SearchResultsPage(page);
+      const cart = new CartPanel(page);
+      const limit = await fetchCategoryLimit(page.request, 'NETFLIX');
+
+      await home.open();
+      await home.search('netflix');
+      const pinCard = results.productCardByName(/Pin virtual POSA/i).first();
+      await expect(pinCard, 'the Netflix pin card should be in the results').toBeVisible();
+
+      // Digital pins are not grocery, so no location is needed.
+      await pinCard.getByRole('button', { name: 'Agregar', exact: true }).click();
+      // At the limit the stepper renders the quantity as plain text instead of an input.
+      const quantity = pinCard.getByText(`${limit} und.`);
+      await expect(quantity).toBeVisible({ timeout: 30_000 });
+      await expect(cart.toggleButton).toContainText(String(limit));
+      await expect(pinCard.getByText(new RegExp(`Máximo ${limit} unidad`))).toBeVisible();
+
+      // The stepper icons have no accessible name; the "+" is the last button in the card.
+      const increase = pinCard.getByRole('button').last();
+      await expect(increase).toBeDisabled();
+      await increase.click({ force: true });
+      await expect(quantity).toBeVisible();
     },
   );
 });
